@@ -1,11 +1,8 @@
 import server from "./server";
-import dotenv from "dotenv";
-dotenv.config();
-
-const PORT = process.env.PORT;
+import { PORT } from "./config/envs";
 
 server.listen(PORT, () => {
   console.log(
-    `Jarvis operativo y atento señor, escuchando mediante sus ${PORT} neuronas`
+    `Jarvis operativo y atento señor, escuchando mediante sus ${PORT} millones de neuronas`
   );
 });
