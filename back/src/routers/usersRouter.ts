@@ -6,6 +6,7 @@ import auth from "../middlewares/auth";
 const usersRouter: Router = Router();
 
 usersRouter.get("/", auth.auth ,UserController.getUsers);
+usersRouter.get("/:id", UserController.getUserById);
 usersRouter.post("/", UserController.createUser);
 
 usersRouter.put("/");
