@@ -1,4 +1,4 @@
-import { UserModel, VehicleModel } from "../config/data-source";
+import { AppDataSource, UserModel, VehicleModel } from "../config/data-source";
 import VehicleDto from "../dto/Vehicle.Dto";
 import { Vehicle } from "../entities/Vehicle";
 import usersServices from "./usersServices";
@@ -14,40 +14,41 @@ export default {
         return vehicles;
 
     },
-    createVehicleService: async(dataVehicle: VehicleDto): Promise<Vehicle> => {
-        //creo el vehicle y lo guardo
-        const newVehicle: Vehicle = await VehicleModel.create(dataVehicle);
-        
-        // aasigno el vehicle al user ingresado
-        // busco al user para asignar vehicle creado
-        //* FORMA 1 - usando la function getUserByIdService de
-        const user = await usersServices.getUserByIdService(dataVehicle.userId);
+    createVehicleService: async(dataVehicle: VehicleDto): Promise<Vehicle | void> => {
+        // creo el queryRunner
+        const queryRunner = AppDataSource.createQueryRunner()
+        // lo conectamos
+        queryRunner.connect();
 
-        //* FORMA 2 - usando el UserModel con el metodo .findOneBy
-        //^ findOneBy<T>(criteria: Partial<T> | ObjectLiteral): Promise<T | undefined>;
-        //^  las claves representan los nombres de las columnas 
-        //^ y los valores representan los valores que deseas buscar en esas columnas.
-        // const user = await UserModel.findOneBy({
-        //     id: dataVehicle.userId
-        // })
-
-        //* @OneToOne
-        // if (user) {
-        //     // asigno al user el vehiculo creado
-        //     user.vehicle = newVehicle;
-        //     // save del vehicle en el user y en la DB
-        //     await VehicleModel.save(newVehicle);
-        //     // save del vehicle en la DB
-        //     await UserModel.save(user);
-        // }
-        //* OneToMany
-        if (user) {
+        try {
+            // inicio la transaction
+            queryRunner.startTransaction();
+            //creo el vehicle y lo guardo
+            const newVehicle: Vehicle = await VehicleModel.create(dataVehicle);
+            // aasigno el vehicle al user ingresado
+            // busco al user para asignar vehicle creado
+            const user = await usersServices.getUserByIdService(dataVehicle.userId);
+            if (!user) throw ({ message: "error no se encontro el user", code: 804, error: "Not found"}); // <= si no existe
+            // si existe asigno el userId al vehicle
             newVehicle.user = user;
-            await VehicleModel.save(newVehicle)
+            // guardo los cambios en el vehicle
+            await queryRunner.manager.save(newVehicle);
+            // libero la transaction
+            await queryRunner.commitTransaction()
+            // el vehicle creado
+            return newVehicle;
+
+        } catch (error) {
+            // si no se completó la transaccion devuelvo todo hacia atras
+            await queryRunner.rollbackTransaction();
+            throw error
         }
-        else{
-            throw new Error("El usuario no existe")
+        finally{
+            await queryRunner.release();
         }
-        return newVehicle;
+        
+        
+
+
     }
 }
