@@ -1,12 +1,13 @@
-import { AppDataSource, UserModel, VehicleModel } from "../config/data-source";
+import { AppDataSource } from "../config/data-source";
 import VehicleDto from "../dto/Vehicle.Dto";
 import { Vehicle } from "../entities/Vehicle";
+import VehicleRepository from "../repositories/Vehicle.Repository";
 import usersServices from "./usersServices";
 
 export default {
     getVehiclesService: async(): Promise<Vehicle[]> => {
         // establesco la relation @ManyToOne con user
-        const vehicles: Vehicle[] = await VehicleModel.find({
+        const vehicles: Vehicle[] = await VehicleRepository.find({
             relations: {
                 user: true
             }
@@ -24,11 +25,11 @@ export default {
             // inicio la transaction
             queryRunner.startTransaction();
             //creo el vehicle y lo guardo
-            const newVehicle: Vehicle = await VehicleModel.create(dataVehicle);
+            const newVehicle: Vehicle = await VehicleRepository.create(dataVehicle);
             // aasigno el vehicle al user ingresado
             // busco al user para asignar vehicle creado
             const user = await usersServices.getUserByIdService(dataVehicle.userId);
-            if (!user) throw ({ message: "error no se encontro el user", code: 804, error: "Not found"}); // <= si no existe
+            //! no necesario? if (!user) throw ({ message: "error no se encontro el user", code: 804, error: "Not found"}); // <= si no existe
             // si existe asigno el userId al vehicle
             newVehicle.user = user;
             // guardo los cambios en el vehicle
@@ -46,9 +47,5 @@ export default {
         finally{
             await queryRunner.release();
         }
-        
-        
-
-
     }
 }

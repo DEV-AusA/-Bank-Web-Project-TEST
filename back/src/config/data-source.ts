@@ -17,7 +17,3 @@ export const AppDataSource = new DataSource({
     subscribers: [],
     migrations: [],
 })
-
-// esta variable invoca el AppDataSource y el metodo getRepository pasandole como parametro la entity User
-export const UserModel = AppDataSource.getRepository(User);
-export const VehicleModel = AppDataSource.getRepository(Vehicle);

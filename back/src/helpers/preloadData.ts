@@ -1,16 +1,18 @@
-import { AppDataSource, UserModel, VehicleModel } from "../config/data-source";
+import { AppDataSource } from "../config/data-source";
+import UserRepository from "../repositories/User.Repositoy";
+import VehicleRepository from "../repositories/Vehicle.Repository";
 import { preloadUsers } from "./users.Data";
 import { preloadVehicles } from "./vehicles.Data";
 
 export const preloadUsersData = async () => {
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
 
-        const users = await UserModel.find();
+        const users = await UserRepository .find();
 
         if(users.length) return console.log(`No se hizo precarga de datos porque ya hay ${users.length} datos cargados`);
         // create & save de preloadUsers
         for await(const user of preloadUsers) {
-            const newUser = await UserModel.create(user);
+            const newUser = await UserRepository.create(user);
             await transactionalEntityManager.save(newUser);
         }
         console.log("Precarga de users realizada con éxito");
@@ -26,11 +28,11 @@ export const preloadVehiclesData = async () => {
     // con el .map convierto el array de lementos en array de promises
     const promises = preloadVehicles.map(async (vehicle) => {
         // creo el newVehicle
-        const newVehicle = await VehicleModel.create(vehicle);
+        const newVehicle = await VehicleRepository.create(vehicle);
         // usando el queryRunner save del newVehicle
         await queryRunner.manager.save(newVehicle);
         // busco el user a asignar
-        const user = await UserModel.findOneBy({
+        const user = await UserRepository.findOneBy({
             id: vehicle.userId
         });
         // si no existe
