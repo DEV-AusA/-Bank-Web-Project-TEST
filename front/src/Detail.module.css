@@ -1,0 +1,21 @@
+.modalDetails {
+    position: fixed;
+    top: 30%;
+    left: 20%;
+    border-radius: 1rem;
+    width: 50%;
+    padding: 50px;
+    background-color: lightseagreen;
+    box-shadow: 0 0 20px black;
+}
+/* 
+body {
+    position: absolute;
+} */
+
+.buttonDetail {
+    background-color: rgb(221, 199, 2);
+    border-style: none;
+    padding: 1.5rem;
+    border-radius: 1rem;
+}
